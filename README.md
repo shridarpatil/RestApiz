@@ -16,5 +16,6 @@ import RestApi
 app = Flask(__name__)
 
 RestApi.createApi(app, host="localhost", userName='', password='', database='')
+
 if __name__ == "__main__":
     app.run(debug=True)
