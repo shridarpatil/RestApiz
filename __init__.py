@@ -1,1 +1,1 @@
-from .restApi import createApi
+from .restApi import createApi, RequestHandler

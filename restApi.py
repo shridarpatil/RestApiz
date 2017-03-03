@@ -1,8 +1,10 @@
 #!/usr/bin/python
 import json
-from flask import jsonify, request
+from flask import jsonify, request, g
 import pymysql.cursors
-import sys
+import sys, time
+from werkzeug.serving import BaseRequestHandler
+import logging
 
 class createService():
 	def __init__(self, app, host, user, password, db):
@@ -43,6 +45,7 @@ class createService():
 		data = c.fetchall()
 
 		for row in data:
+
 			if row['method'].lower() == 'get':
 				self.createGet(row['url'], row['method'], row['query'])
 			elif row['method'].lower() == 'post':
@@ -56,7 +59,7 @@ class createService():
 
 		app = self.app
 		def get():
-
+			logging.debug('Running /' + url)
 			queryParams = request.args
 			generatedQuery = self.generateQuery(queryParams, query, ':')
 
@@ -65,13 +68,14 @@ class createService():
 				c.execute(generatedQuery)
 				data = c.fetchall()
 			except Exception, e:
+				logging.error(e)
 				raise InvalidUsage(str(e), status_code=400)
 			
 			if not data:
 				type = 'Warning'
 			else:
 				type = 'Info'
-
+			logging.debug('Completed /' + url)
 			return json.dumps({"success":True, "type":type, "data" : data})
 		
 		get.methods = [method]
@@ -82,6 +86,7 @@ class createService():
 		app = self.app
 
 		def post():
+			logging.debug('Running /' + url)
 			json = request.get_json(force=True)
 			values = self.generatePostQuery(json, query)
 			c = self.c
@@ -90,8 +95,10 @@ class createService():
 				c.execute(query, values)
 				id = conn.insert_id()
 				conn.commit()
+				logging.debug('Completed /' + url)
 				return jsonify({"success":True, "type":"Info", "data" : id})
 			except Exception, e:
+				logging.error(e)
 				raise InvalidUsage(str(e), status_code=400)
 			
 			
@@ -103,16 +110,44 @@ class createService():
 	def createPut(self, url, method, query):
 		app = self.app
 		
+		# pathBeforeReq = './hello'
+		# funcNameBeforeReq = 'hell'
+
+		# pathAfterReq = './hello'
+		# funcNameAfterReq = 'hell'
+		
 		def put():
+			logging.debug('Running /' + url)
 			
-			json = request.get_json(force=True)
+			data = request.get_json(force=True)
 			queryParams = request.args
+
+
+			# try:
+
+			# 	funcBeforeReq = self.generateFunc(pathBeforeReq, funcNameBeforeReq)
+
+			# except TypeError, e:
+			# 	raise InvalidUsage(funcName + ' must return queryParams, data', status_code=404)
+			
+			# except Exception, e:
+			# 	raise InvalidUsage(str(e), status_code=404)
+
+			# try:
+			# 	queryParams, data = funcBeforeReq(InvalidUsage, queryParams, data)
+
+			# except Exception, e:
+			# 	raise InvalidUsage('Error in function '+ funcNameBeforeReq, status_code=404, payload={'Error':str(e)})
+
+			 
+			
 
 			try:
 				generatedQuery = self.generateQuery(queryParams, query, ':')
-				generatedQuery = self.generateQuery(json, generatedQuery, ';')
-			
+				generatedQuery = self.generateQuery(data, generatedQuery, ';')
+				logging.debug('Query : ' + generatedQuery)
 			except Exception, e:
+				logging.error(e)
 				raise InvalidUsage(str(e), status_code=404)
 			
 			# values = self.generatePostQuery(json, query)
@@ -123,9 +158,32 @@ class createService():
 				c.execute(generatedQuery)
 				id = conn.insert_id()
 				conn.commit()
-				return jsonify({"success":True, "type":"Info", "data" : []})
 			except Exception, e:
+				logging.error(e)
 				raise InvalidUsage(str(e), status_code=400)
+
+			# try:
+
+			# 	funcAfterReq = self.generateFunc(pathAfterReq, funcNameAfterReq)
+
+			# except TypeError, e:
+			# 	raise InvalidUsage(funcName + ' must return queryParams, data', status_code=404)
+			
+			# except Exception, e:
+			# 	raise InvalidUsage(str(e), status_code=404)
+
+			# try:
+			# 	queryParams = funcAfterReq(InvalidUsage, queryParams, data)
+
+			# except Exception, e:
+			# 	raise InvalidUsage('Error in function '+ funcNameBeforeReq, status_code=404, payload={'Error':str(e)})
+
+			
+			
+			logging.debug('Completed /' + url)
+			return jsonify({"success":True, "type":"Info", "data" : []})
+
+
 		put.methods = [method]
 		self.app.add_url_rule('/' + url, url, 
                       put)
@@ -141,6 +199,7 @@ class createService():
 			for param in params:
 				values.append(data[param.replace(' ', '')])
 		except Exception, e:
+			logging.error(e)
 			raise InvalidUsage(str(e), status_code=400)
 
 		
@@ -169,11 +228,16 @@ class createService():
 				
 				paramsReplaceText = params[param]
 			query = query.replace(qSymbol+param, paramsReplaceText)
-			query = self.generateQuery(params, query, qSymbol)		
+			query = self.generateQuery(params, query, qSymbol)
 		return query
 
+	def generateFunc(self, path, funcName):
 
-		
+			sys.path.insert(0, path)
+			moduleBeforeReq = __import__(funcName)
+
+			return getattr(moduleBeforeReq, funcName)
+
 
 class InvalidUsage(Exception):
     status_code = 400
@@ -192,38 +256,73 @@ class InvalidUsage(Exception):
         rv['type'] = 'Error'
         return rv
 
+
 def createApi(app, host=None, userName=None, password=None, database=None):
 
 	if host==None:
+		logging.error('host not found')
 		raise ValueError('host not found')
 
 	if userName==None:
+		logging.error('userName not found')
 		raise ValueError('userName not found')
 
 	if password==None:
+		logging.error('password not found')
 		raise ValueError('password not found')
 
 	if database==None:
+		logging.error('database not found')
 		raise ValueError('database not found')
+
+	logging.getLogger('Rest Api')
+	logging.basicConfig(filename='RestApi.log',level=logging.DEBUG, format='Rest-Api %(asctime)s [%(levelname)-5.5s] %(message)s')
+
 
 	@app.errorhandler(InvalidUsage)
 	def handle_invalid_usage(error):
 	    response = jsonify(error.to_dict())
 	    response.status_code = error.status_code
 	    return response
-	
+	@app.before_request
+	def before_request():
+	  g.start = time.time()
+
+	@app.after_request
+	def after_request(response):
+	    diff = int((time.time() - g.start) * 1000)
+	    logging.debug('Api Execution Time ' + str(diff))
+	    return response
+		
 	createServices = createService(app, host, userName, password, database)
 	print """
-//////////  //////////  ///////////   ///////////////
-//      //  //          //                  ||
-//      //  //          //                  ||
-//     //   //          //                  ||
-////////    //////////  ///////////         ||
-///         //                   //         ||
-// //       //                   //         ||
-//   //     //                   //         ||
-//    //    //////////  //////////          ||		
-	"""
+			______          _      ___        _ 
+			| ___ \        | |    / _ \      (_)
+			| |_/ /___  ___| |_  / /_\ \_ __  _ 
+			|    // _ \/ __| __| |  _  | '_ \| |
+			| |\ \  __/\__ \ |_  | | | | |_) | |
+			\_| \_\___||___/\__| \_| |_/ .__/|_|
+			                           | |      
+			                           |_|       
+
+"""
 	return True
+
+
+class RequestHandler(BaseRequestHandler):
+    """Extend werkzeug request handler to suit our needs."""
+    def handle(self):
+        self.fancyStarted = time.time()
+        rv = super(RequestHandler, self).handle()
+        return rv
+
+    def send_response(self, *args, **kw):
+        self.fancyProcessed = time.time()
+        super(RequestHandler, self).send_response(*args, **kw)
+
+    def log_request(self, code='-', size='-'):
+        duration = int((self.fancyProcessed - self.fancyStarted) * 1000)
+        self.log('info', '"{0}" {1} {2} [{3}ms]'.format(self.requestline, code, size, duration))
+
 
 version = '0.0.1'
