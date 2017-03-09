@@ -1,7 +1,7 @@
 from distutils.core import setup
 setup(
-  name = 'RestApi',
-  packages = ['RestApi'], # this must be the same as the name above
+  name = 'restapi',
+  packages = ['restapi'], # this must be the same as the name above
   version = '0.0.1',
   description = 'Create Rest Api',
   author = 'Shridhar Patil',
