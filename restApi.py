@@ -5,6 +5,7 @@ import pymysql.cursors
 import sys, time
 from werkzeug.serving import BaseRequestHandler
 import logging
+from flask import render_template
 
 class createService():
 	def __init__(self, app, host, user, password, db):
@@ -156,7 +157,6 @@ class createService():
 			conn = self.conn
 			try:
 				c.execute(generatedQuery)
-				id = conn.insert_id()
 				conn.commit()
 			except Exception, e:
 				logging.error(e)
@@ -278,7 +278,6 @@ def createApi(app, host=None, userName=None, password=None, database=None):
 	logging.getLogger('Rest Api')
 	logging.basicConfig(filename='RestApi.log',level=logging.DEBUG, format='Rest-Api %(asctime)s [%(levelname)-5.5s] %(message)s')
 
-
 	@app.errorhandler(InvalidUsage)
 	def handle_invalid_usage(error):
 	    response = jsonify(error.to_dict())
@@ -286,13 +285,8 @@ def createApi(app, host=None, userName=None, password=None, database=None):
 	    return response
 	@app.before_request
 	def before_request():
-	  g.start = time.time()
-
-	@app.after_request
-	def after_request(response):
-	    diff = int((time.time() - g.start) * 1000)
-	    logging.debug('Api Execution Time ' + str(diff))
-	    return response
+		
+		logClient(request)
 		
 	createServices = createService(app, host, userName, password, database)
 	print """
@@ -308,7 +302,18 @@ def createApi(app, host=None, userName=None, password=None, database=None):
 """
 	return True
 
+class logClient(object):
+	"""docstring for logClient"""
+	def __init__(self, arg):
+		super(logClient, self).__init__()
+		self.arg = arg
+		self.logClient()
 
+	def logClient(self):
+		logging.info('Client-IP: ' + self.arg.remote_addr)
+		logging.info('User-Agent: ' + self.arg.headers.get('User-Agent'))
+		pass
+		
 class RequestHandler(BaseRequestHandler):
     """Extend werkzeug request handler to suit our needs."""
     def handle(self):
