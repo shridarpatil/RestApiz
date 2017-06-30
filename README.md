@@ -21,11 +21,27 @@ Example
 | ------------- | ------------- | ------------- | ------------- |
 | 1  | POST  | po  | postPo  |
 
+Url:/postPo
+
+Method:POST
+
+Content-Type:application/json
+
+Body:{"poid":1, "potext":"po text"}
+
+
 - For GET create entry in rest api table and call rest api as follows
 
 | rest_id  | method | query  | url |
 | ------------- | ------------- | ------------- | ------------- |
 | 1  | GET  | select * from po	  | getPo  |
+
+
+Url:/getPo
+
+Method:GET
+
+Body:{"poid":1, "potext":"po text"}
 
  
 ```
