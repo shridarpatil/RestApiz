@@ -330,4 +330,4 @@ class RequestHandler(BaseRequestHandler):
         self.log('info', '"{0}" {1} {2} [{3}ms]'.format(self.requestline, code, size, duration))
 
 
-version = '0.0.1'
+version = '0.0.3'
