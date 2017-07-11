@@ -19,7 +19,9 @@ class createService():
 		pass
 	
 	def connection(self):
-		
+		"""
+		Connect to mysql database 
+		"""
 		host = self.host
 		user = self.user
 		password = self.password
@@ -40,6 +42,9 @@ class createService():
 		self.generateRestApi()
 
 	def generateRestApi(self):
+		"""
+		Generate rest apis
+		"""
 		query = "select * from py_restapi"
 		c =  self.c
 		c.execute(query)
@@ -57,7 +62,13 @@ class createService():
 	
 
 	def createGet(self, url, method, query):
+		"""
+		Create route for all GET methods
 
+		:param utl : The route for the get method
+		:param method : The rest method
+		:param query : sql query 
+		"""
 		app = self.app
 		def get():
 			logging.debug('Running /' + url)
@@ -81,9 +92,16 @@ class createService():
 		
 		get.methods = [method]
 		app.add_url_rule('/' + url, url, get)
-		pass
+		
 
 	def createPost(self, url, method, query):
+		"""
+		Create route for all POST methods
+		
+		:param utl : The route for the get method
+		:param method : The rest method
+		:param query : sql query 
+		"""
 		app = self.app
 
 		def post():
@@ -109,6 +127,9 @@ class createService():
 		pass
 
 	def createPut(self, url, method, query):
+		"""
+		Create route for all PUT methods
+		"""
 		app = self.app
 		
 		# pathBeforeReq = './hello'
@@ -191,6 +212,9 @@ class createService():
 
 
 	def generatePostQuery(self, data, query):
+		"""
+		Create insert query
+		"""
 		startPt = query.find('(') + 1
 		endPt = query.find(')')
 		params = query[startPt:endPt].split(',')
@@ -207,7 +231,9 @@ class createService():
 
 
 	def generateQuery(self, params, query, symbol):
-			
+		"""
+		Create GET, PUT, DELETE query
+		"""	
 		qSymbol = symbol
 		qColon = query.find(qSymbol)
 		if qColon!=-1:
