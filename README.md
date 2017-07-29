@@ -34,10 +34,10 @@ Body:{"poid":1, "potext":"po text"}
 
 | rest_id  | method | query  | url |
 | ------------- | ------------- | ------------- | ------------- |
-| 1  | GET  | select * from po	  | getPo  |
+| 1  | GET  | select * from po where id=:id	  | getPo  |
 
 
-Url:/getPo
+Url:/getPo?id=1
 
 Method:GET
 
