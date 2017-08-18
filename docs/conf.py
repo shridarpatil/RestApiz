@@ -30,9 +30,8 @@ project_root = os.path.dirname(cwd)
 # This lets us ensure that the source package is imported, and that its
 # version is used.
 sys.path.insert(0, project_root)
-autodoc_mock_imports = ['Flask']
 
-import RestApiz
+# import RestApiz
 
 # -- General configuration ---------------------------------------------
 
