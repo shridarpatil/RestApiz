@@ -14,13 +14,13 @@ with open('HISTORY.rst') as history_file:
 
 requirements = [
     # TODO: put package requirements here
-    'pymysql', 'flask', 'flask-cors',
+    'pymysql', 'Flask', 'flask-cors',
 ]
 
 setup_requirements = [
     'pytest-runner',
     'pymysql',
-    'flask',
+    'Flask',
     'flask-cors',
     # TODO(shridarpatil): put setup requirements (distutils extensions, etc.) here
 ]
