@@ -20,7 +20,7 @@ requirements = [
 setup_requirements = [
     'pytest-runner',
     'pymysql',
-    'flask',
+    'Flask',
     'flask-cors',
     # TODO(shridarpatil): put setup requirements (distutils extensions, etc.) here
 ]
