@@ -1,0 +1,6 @@
+{
+    "databaseHostName": "localhost", 
+    "databaseName": "rest_api", 
+    "databasePassword": "r00t", 
+    "databaseUserName": "root"
+}

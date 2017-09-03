@@ -12,6 +12,7 @@ import logging
 import pymysql
 
 from utils.import_from import import_func
+from utils.response import generate_response_body
 from werkzeug.serving import BaseRequestHandler
 
 
@@ -82,9 +83,15 @@ class CreateService():
 
         def get():
             logging.debug('Running /' + url)
-            query_params = request.args
-            logging.debug(query_params)
-            generated_query = self.generate_query(query_params, query, ':')
+
+            bag = {
+                "request_body": request.args,
+                "response_body": {},
+            }
+
+            generated_query = self.generate_query(
+                bag['request_body'], query, ':'
+            )
             logging.debug('generated_query /' + generated_query)
 
             c = self.c
@@ -96,9 +103,14 @@ class CreateService():
                 raise InvalidUsage(str(e), status_code=400)
 
             if not data:
-                type = 'Warning'
+                response_type = 'Warning'
             else:
-                type = 'Info'
+                response_type = 'Info'
+
+            generate_response_body(
+                bag['response_body'], 'success',
+                response_type, data, 'Success'
+            )
             logging.debug('Completed /' + url)
             return jsonify({"success": True, "type": type, "data": data})
 
@@ -119,24 +131,30 @@ class CreateService():
 
         def post():
             logging.debug('Running /' + url)
-            json = request.get_json(force=True)
-            values = self.generate_post_query(json, query)
+            bag = {
+                "request_body": request.get_json(force=True),
+                "response_body": {},
+            }
+
+            values = self.generate_post_query(bag['request_body'], query)
             c = self.c
             conn = self.conn
             try:
                 c.execute(query, values)
-                id = conn.insert_id()
-                conn.commit()
-
             except Exception as e:
                 logging.error(e.message)
                 raise InvalidUsage(str(e.message), status_code=400)
 
+            id = conn.insert_id()
+            conn.commit()
+
             logging.debug('Completed /' + url)
 
-            return jsonify({
-                "success": True, "type": "Info", "data": id
-            })
+            generate_response_body(
+                bag['response_body'], 'success',
+                'info', id, 'Inserted successfully'
+            )
+            return jsonify(bag['response_body'])
 
         post.methods = [method]
         self.app.add_url_rule('/' + url, url, post)
@@ -153,18 +171,21 @@ class CreateService():
         def put():
             logging.debug('Running /' + url)
 
-            data = request.get_json(force=True)
-            query_params = request.args
+            bag = {
+                "request_body": request.get_json(force=True),
+                "query_params": request.args,
+                "response_body": {},
+            }
 
             if before_query != '':
                 before_query_func = import_func(before_query)
-                before_query_func({
-                    "data": data, "query_params": query_params
-                })
+                before_query_func(bag)
             try:
-                generated_query = self.generate_query(query_params, query, ':')
                 generated_query = self.generate_query(
-                    data, generated_query, ';'
+                    bag['query_params'], query, ':'
+                )
+                generated_query = self.generate_query(
+                    bag['request_body'], generated_query, ';'
                 )
                 logging.info('Query : {}'.format(generated_query))
             except Exception as e:
@@ -181,19 +202,21 @@ class CreateService():
                 logging.error(e)
                 raise InvalidUsage(str(e), status_code=400)
             try:
-                mysql_result = conn.commit()
+                conn.commit()
             except Warning as e:
                 raise e
 
             if after_query != '':
                 after_query_func = import_func(after_query)
-                after_query_func(data, query_params)
+                after_query_func(bag)
 
             logging.debug('Completed /' + url)
-            return jsonify({
-                "success": True, "type": "Info",
-                "data": [], "mysql_result": mysql_result
-            })
+
+            generate_response_body(
+                bag['response_body'], 'success',
+                'info', [], 'Updated successfully'
+            )
+            return jsonify(bag['response_body'])
 
         put.methods = [method]
         self.app.add_url_rule('/' + url, url, put)
