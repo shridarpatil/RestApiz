@@ -1,17 +1,18 @@
 # -*- coding: utf-8 -*-
 
 """Generate Rest like apis."""
-import json
+# import json
 import sys
 import time
 
 from flask import jsonify
 from flask import request
-from flask import Response
 
-import pymysql.cursors
-from werkzeug.serving import BaseRequestHandler
 import logging
+import pymysql
+
+from utils.import_from import import_func
+from werkzeug.serving import BaseRequestHandler
 
 
 class CreateService():
@@ -61,13 +62,13 @@ class CreateService():
         for row in data:
 
             if row['method'].lower() == 'get':
-                self.create_get(row['url'], row['method'], row['query'])
+                self.create_get(row)
             elif row['method'].lower() == 'post':
-                self.create_post(row['url'], row['method'], row['query'])
+                self.create_post(row)
             elif row['method'].lower() == 'put':
-                self.create_put(row['url'], row['method'], row['query'])
+                self.create_put(row)
 
-    def create_get(self, url, method, query):
+    def create_get(self, metadta):
         """
         Create route for all GET methods.
 
@@ -75,7 +76,9 @@ class CreateService():
         :param method : The rest method
         :param query : sql query
         """
-        app = self.app
+        url = metadta['url']
+        method = metadta['method']
+        query = metadta['query']
 
         def get():
             logging.debug('Running /' + url)
@@ -97,15 +100,12 @@ class CreateService():
             else:
                 type = 'Info'
             logging.debug('Completed /' + url)
-            return Response(
-                json.dumps({"success": True, "type": type, "data": data}),
-                mimetype='application/json'
-            )
+            return jsonify({"success": True, "type": type, "data": data})
 
         get.methods = [method]
-        app.add_url_rule('/' + url, url, get)
+        self.app.add_url_rule('/' + url, url, get)
 
-    def create_post(self, url, method, query):
+    def create_post(self, metadta):
         """
         Create route for all POST methods
 
@@ -113,6 +113,10 @@ class CreateService():
         :param method : The rest method
         :param query : sql query
         """
+        url = metadta['url']
+        method = metadta['method']
+        query = metadta['query']
+
         def post():
             logging.debug('Running /' + url)
             json = request.get_json(force=True)
@@ -123,26 +127,28 @@ class CreateService():
                 c.execute(query, values)
                 id = conn.insert_id()
                 conn.commit()
-                logging.debug('Completed /' + url)
-                return
-                return Response(
-                    jsonify({"success": True, "type": "Info", "data": id}),
-                    mimetype='application/json'
-                )
+
             except Exception as e:
                 logging.error(e.message)
                 raise InvalidUsage(str(e.message), status_code=400)
 
+            logging.debug('Completed /' + url)
+
+            return jsonify({
+                "success": True, "type": "Info", "data": id
+            })
+
         post.methods = [method]
         self.app.add_url_rule('/' + url, url, post)
 
-    def create_put(self, url, method, query):
+    def create_put(self, metadta):
         """Create route for all PUT methods."""
-        # pathBeforeReq = './hello'
-        # funcNameBeforeReq = 'hell'
+        url = metadta['url']
+        method = metadta['method']
+        query = metadta['query']
 
-        # pathAfterReq = './hello'
-        # funcNameAfterReq = 'hell'
+        before_query = metadta['before_query']
+        after_query = metadta['after_query']
 
         def put():
             logging.debug('Running /' + url)
@@ -150,41 +156,20 @@ class CreateService():
             data = request.get_json(force=True)
             query_params = request.args
 
-            # try:
-
-            #   funcBeforeReq = self.generate_function(
-            #     pathBeforeReq, funcNameBeforeReq
-            # )
-
-            # except TypeError as e:
-            #     raise InvalidUsage(
-            #         funcName + ' must return query_params, data',
-            #         status_code=404
-            # )
-
-            # except Exception as e:
-            #   raise InvalidUsage(str(e), status_code=404)
-
-            # try:
-            #     query_params, data = funcBeforeReq(
-            #         InvalidUsage, query_params, data
-            #     )
-
-            # except Exception as e:
-            #     raise InvalidUsage(
-            #         'Error in function '+ funcNameBeforeReq,
-            #         status_code=404, payload={'Error': str(e)}
-            #     )
-
+            if before_query != '':
+                before_query_func = import_func(before_query)
+                before_query_func({
+                    "data": data, "query_params": query_params
+                })
             try:
                 generated_query = self.generate_query(query_params, query, ':')
                 generated_query = self.generate_query(
                     data, generated_query, ';'
                 )
-                logging.debug('Query : ' + generated_query)
+                logging.info('Query : {}'.format(generated_query))
             except Exception as e:
                 logging.error(e)
-                raise InvalidUsage(str(e), status_code=404)
+                raise InvalidUsage(str(e), status_code=400)
 
             # values = self.generate_post_query(json, query)
 
@@ -192,40 +177,23 @@ class CreateService():
             conn = self.conn
             try:
                 c.execute(generated_query)
-                conn.commit()
             except Exception as e:
                 logging.error(e)
                 raise InvalidUsage(str(e), status_code=400)
+            try:
+                mysql_result = conn.commit()
+            except Warning as e:
+                raise e
 
-            # try:
-
-            #     funcAfterReq = self.generate_function(
-            #         pathAfterReq, funcNameAfterReq
-            #     )
-
-            # except TypeError as e:
-            #     raise InvalidUsage(
-            #         funcName + ' must return query_params, data',
-            #         status_code=404
-            #     )
-
-            # except Exception as e:
-            #     raise InvalidUsage(str(e), status_code=404)
-
-            # try:
-            #     query_params = funcAfterReq(InvalidUsage, query_params, data)
-
-            # except Exception as e:
-            #     raise InvalidUsage(
-            #         'Error in function '+ funcNameBeforeReq,
-            #         status_code=404, payload={'Error':str(e)}
-            #     )
+            if after_query != '':
+                after_query_func = import_func(after_query)
+                after_query_func(data, query_params)
 
             logging.debug('Completed /' + url)
-            return Response(
-                jsonify({"success": True, "type": "Info", "data": []}),
-                mimetype='application/json'
-            )
+            return jsonify({
+                "success": True, "type": "Info",
+                "data": [], "mysql_result": mysql_result
+            })
 
         put.methods = [method]
         self.app.add_url_rule('/' + url, url, put)
@@ -259,14 +227,23 @@ class CreateService():
             param = query[q_colon:q_space]
             params_replace_text = ""
             if symbol == ";":
-                if type(params[param]) == str:
+                if isinstance(params[param], unicode):
+                    params[param] = params[param].encode('utf-8', 'replace')
+
+                if isinstance(params[param], str):
                     params_replace_text = "'" + str(params[param]) + "'"
                 else:
                     params_replace_text = params[param]
             else:
 
                 params_replace_text = params[param]
-            query = query.replace(q_symbol + param, params_replace_text)
+            logging.debug(params_replace_text)
+            try:
+                query = query.replace(q_symbol + param, params_replace_text)
+            except TypeError:
+                query = query.replace(
+                    q_symbol + param, str(params_replace_text)
+                )
             query = self.generate_query(params, query, q_symbol)
         return query
 

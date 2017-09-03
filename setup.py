@@ -3,7 +3,8 @@
 
 """The setup script."""
 
-from setuptools import setup, find_packages
+from setuptools import find_packages
+from setuptools import setup
 
 with open('README.rst') as readme_file:
     readme = readme_file.read()
@@ -13,13 +14,14 @@ with open('HISTORY.rst') as history_file:
 
 requirements = [
     # TODO: put package requirements here
-    'pymysql', 'Flask',
+    'pymysql', 'flask', 'flask-cors',
 ]
 
 setup_requirements = [
     'pytest-runner',
     'pymysql',
-    'Flask',
+    'flask',
+    'flask-cors',
     # TODO(shridarpatil): put setup requirements (distutils extensions, etc.) here
 ]
 
@@ -27,6 +29,7 @@ test_requirements = [
     'pytest',
     'pymysql',
     'Flask',
+    'flask-cors',
     # TODO: put package test requirements here
 ]
 

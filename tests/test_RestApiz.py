@@ -3,10 +3,20 @@
 
 """Tests for `RestApiz` package."""
 
+import json
 import pytest
 
-
 from RestApiz import RestApiz
+
+from flask import Flask
+from flask_cors import CORS
+
+app = Flask(__name__)
+
+CORS(app)
+
+with open('tests/dbConfig.json') as data_file:
+    data = json.load(data_file)
 
 
 @pytest.fixture
@@ -23,3 +33,10 @@ def test_content(response):
     """Sample pytest test function with the pytest fixture as an argument."""
     # from bs4 import BeautifulSoup
     # assert 'GitHub' in BeautifulSoup(response.content).title.string
+    RestApiz.create_api(
+        app,
+        host=data["databaseHostName"],
+        user_name=data['databaseUserName'],
+        password=data['databasePassword'],
+        database=data['databaseName']
+    )
