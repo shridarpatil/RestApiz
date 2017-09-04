@@ -22,7 +22,7 @@ setup_requirements = [
     'pymysql',
     'Flask>=0.10.1',
     'flask-cors',
-    # TODO(shridarpatil): put setup requirements (distutils extensions, etc.) here
+    # TODO(shridarpatil): put setup requirements (distutils extensions, etc.)
 ]
 
 test_requirements = [
@@ -42,7 +42,7 @@ setup(
     author_email='shridharpatil2792@gmail.com',
     url='https://github.com/shridarpatil/RestApiz',
     download_url='https://github.com/shridarpatil/Flask-RestApi/archive/0.1.0.tar.gz',
-    packages=find_packages(include=['RestApiz']),
+    packages=find_packages(include=("RestApiz",)),
     include_package_data=True,
     install_requires=requirements,
     license="MIT license",
