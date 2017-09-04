@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 """Create tables."""
-import pymysql
+import pymysql  # noqa
 
-from tables import TABLES
+from .queries import TABLES
 
 
 def create_tables(cursor, conn):
@@ -16,18 +16,16 @@ def create_tables(cursor, conn):
     """
     sql_notes(0, cursor)
     for table_name, value in TABLES.iteritems():
-        print "Creating table : {}".format(table_name)
+        print("Creating table : {}".format(table_name))
         try:
             cursor.execute(value['sql'])
         except Exception as e:
             raise e
-        except pymysql.Warning as e:
-            print e
 
         conn.commit()
     sql_notes(1, cursor)
 
 
 def sql_notes(status, cursor):
-    """Temporarily cahn the "Table already exists" warning."""
+    """Temporarily change the "Table already exists" warning."""
     cursor.execute("SET sql_notes = {};".format(status))

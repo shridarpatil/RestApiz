@@ -17,6 +17,8 @@ from utils.import_from import import_func
 from utils.log_client import LogClient
 from utils.response import generate_response_body
 from helpers.create_tables import create_tables
+from helpers.create_routes import create_routes
+from helpers.create_users import create_admin_user
 from werkzeug.serving import BaseRequestHandler
 
 
@@ -74,18 +76,25 @@ class CreateService():
         method = metadta['method']
         query = metadta['query']
 
+        before_query = metadta['before_query']
+        after_query = metadta['after_query']
+
         def get():
             log.debug('Running /' + url)
 
             bag = {
-                "request_body": request.args,
+                "query_params": request.args.to_dict(),
                 "response_body": {},
             }
 
+            if before_query != '':
+                before_query_func = import_func(before_query)
+                before_query_func(bag)
+
             generated_query = self.generate_query(
-                bag['request_body'], query, ':'
+                bag['query_params'], query, ':'
             )
-            log.debug('generated_query /' + generated_query)
+            log.debug('Query :' + generated_query)
 
             c = self.c
             try:
@@ -94,6 +103,10 @@ class CreateService():
             except Exception as e:
                 log.error(e)
                 raise InvalidUsage(str(e), status_code=400)
+
+            if after_query != '':
+                after_query_func = import_func(after_query)
+                after_query_func(bag)
 
             if not data:
                 response_type = 'Warning'
@@ -124,6 +137,9 @@ class CreateService():
         method = metadta['method']
         query = metadta['query']
 
+        before_query = metadta['before_query']
+        after_query = metadta['after_query']
+
         def post():
             log.debug('Running /' + url)
             bag = {
@@ -134,6 +150,11 @@ class CreateService():
             values = self.generate_post_query(bag['request_body'], query)
             c = self.c
             conn = self.conn
+
+            if before_query != '':
+                before_query_func = import_func(before_query)
+                before_query_func(bag)
+
             try:
                 c.execute(query, values)
             except Exception as e:
@@ -143,12 +164,19 @@ class CreateService():
             id = conn.insert_id()
             conn.commit()
 
-            log.debug('Completed /' + url)
+            bag['response_body'] = id
+
+            if after_query != '':
+                after_query_func = import_func(after_query)
+                after_query_func(bag)
 
             generate_response_body(
                 bag['response_body'], 'success',
                 'info', id, 'resource updated successfully'
             )
+
+            log.debug('Completed /' + url)
+
             return jsonify(bag['response_body']), 201
 
         post.methods = [method]
@@ -168,7 +196,7 @@ class CreateService():
 
             bag = {
                 "request_body": request.get_json(force=True),
-                "query_params": request.args,
+                "query_params": request.args.to_dict(),
                 "response_body": {},
             }
 
@@ -246,17 +274,17 @@ class CreateService():
 
             param = query[q_colon:q_space]
             params_replace_text = ""
-            if symbol == ";":
-                if isinstance(params[param], unicode):
-                    params[param] = params[param].encode('utf-8', 'replace')
+            # if symbol == ";":
+            if isinstance(params[param], unicode):
+                params[param] = params[param].encode('utf-8', 'replace')
 
-                if isinstance(params[param], str):
-                    params_replace_text = "'" + str(params[param]) + "'"
-                else:
-                    params_replace_text = params[param]
+            if isinstance(params[param], str):
+                params_replace_text = "'" + str(params[param]) + "'"
             else:
-
                 params_replace_text = params[param]
+            # else:
+
+            #     params_replace_text = params[param]
 
             try:
                 query = query.replace(q_symbol + param, params_replace_text)
@@ -307,8 +335,13 @@ def create_api(app, host=None, user_name=None, password=None, database=None):
 
     apis = CreateService()
     cursor, connection = apis.db_connect(host, user_name, password, database)
+
     create_tables(cursor, connection)
+    create_admin_user(cursor, connection)
+    create_routes(cursor, connection)
+
     apis.generate_rest_api(app, cursor, connection)
+
     echo()
 
 

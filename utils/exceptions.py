@@ -19,6 +19,12 @@ class ResourceNotFound(RestApixBaseException):
     pass
 
 
+class DuplicateEntry(RestApixBaseException):
+    """Mysql DuplicateEntry Error"""
+
+    pass
+
+
 class InvalidUsage(Exception):
     """Invalid Usage."""
 
