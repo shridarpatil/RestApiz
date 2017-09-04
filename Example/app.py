@@ -69,5 +69,5 @@ def routes():
 
 if __name__ == "__main__":
     create_api(app)
-    app.run(debug=True, port=60000, host='127.0.1.1', threaded=True)
+    app.run(debug=True, port=60000, host='127.0.1.1')
     # app.run(debug=False, request_handler=RestApiz.RequestHandler, port=3000)
