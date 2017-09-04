@@ -1,3 +1,4 @@
+#!/bin/python
 # -*- coding: utf-8 -*-
 
 """Generate Rest like apis."""
@@ -15,29 +16,18 @@ from utils.exceptions import InvalidUsage
 from utils.import_from import import_func
 from utils.log_client import LogClient
 from utils.response import generate_response_body
+from helpers.create_tables import create_tables
 from werkzeug.serving import BaseRequestHandler
 
 
 class CreateService():
     """Create service."""
 
-    def __init__(self, app, host, user, password, db):
+    def __init__(self):
         """Initialize."""
-        self.app = app
-        self.host = host
-        self.user = user
-        self.password = password
-        self.db = db
 
-        self.connection()
-
-    def connection(self):
+    def db_connect(self, host, user, password, db):
         """Connect to mysql database."""
-        host = self.host
-        user = self.user
-        password = self.password
-        db = self.db
-
         try:
             conn = pymysql.connect(
                 host=host,
@@ -51,19 +41,20 @@ class CreateService():
         except Exception as e:
             raise ValueError(e)
 
+        return c, conn
+
+    def generate_rest_api(self, app, c, conn):
+        """Generate rest apis."""
+        self.app = app
         self.c = c
         self.conn = conn
-        self.generate_rest_api()
 
-    def generate_rest_api(self):
-        """Generate rest apis."""
         query = "select * from py_restapi"
         c = self.c
         c.execute(query)
         data = c.fetchall()
 
         for row in data:
-
             if row['method'].lower() == 'get':
                 self.create_get(row)
             elif row['method'].lower() == 'post':
@@ -314,7 +305,10 @@ def create_api(app, host=None, user_name=None, password=None, database=None):
         log.debug(request.headers.get('token'))
         log.debug(request.endpoint)
 
-    CreateService(app, host, user_name, password, database)
+    apis = CreateService()
+    cursor, connection = apis.db_connect(host, user_name, password, database)
+    create_tables(cursor, connection)
+    apis.generate_rest_api(app, cursor, connection)
     echo()
 
 
