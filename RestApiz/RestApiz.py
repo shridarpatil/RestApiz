@@ -18,6 +18,8 @@ from utils.log_client import LogClient
 from utils.response import generate_response_body
 from helpers.create_tables import create_tables
 from helpers.create_routes import create_routes
+from helpers.create_constraints import create_foreign_key_constraints
+
 from helpers.create_users import create_admin_user
 from werkzeug.serving import BaseRequestHandler
 
@@ -39,6 +41,7 @@ class CreateService():
                 charset='utf8mb4',
                 cursorclass=pymysql.cursors.DictCursor
             )
+            conn.autocommit(True)
             c = conn.cursor()
         except Exception as e:
             raise ValueError(e)
@@ -72,7 +75,7 @@ class CreateService():
         :param method : The rest method
         :param query : sql query
         """
-        url = metadta['url']
+        url = metadta['route_name']
         method = metadta['method']
         query = metadta['query']
 
@@ -133,7 +136,7 @@ class CreateService():
         :param method : The rest method
         :param query : sql query
         """
-        url = metadta['url']
+        url = metadta['route_name']
         method = metadta['method']
         query = metadta['query']
 
@@ -184,7 +187,7 @@ class CreateService():
 
     def create_put(self, metadta):
         """Create route for all PUT methods."""
-        url = metadta['url']
+        url = metadta['route_name']
         method = metadta['method']
         query = metadta['query']
 
@@ -337,6 +340,7 @@ def create_api(app, host=None, user_name=None, password=None, database=None):
     cursor, connection = apis.db_connect(host, user_name, password, database)
 
     create_tables(cursor, connection)
+    create_foreign_key_constraints(cursor, connection)
     create_admin_user(cursor, connection)
     create_routes(cursor, connection)
 

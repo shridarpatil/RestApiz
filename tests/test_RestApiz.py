@@ -3,20 +3,7 @@
 
 """Tests for `RestApiz` package."""
 
-import json
 import pytest
-
-from RestApiz import RestApiz  # noqa
-
-from flask import Flask
-from flask_cors import CORS
-
-app = Flask(__name__)
-
-CORS(app)
-
-with open('tests/dbConfig.json') as data_file:
-    data = json.load(data_file)
 
 
 @pytest.fixture

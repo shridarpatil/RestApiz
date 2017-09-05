@@ -14,9 +14,14 @@ def create_tables(cursor, conn):
     :param cursor: databse cursor
     :param conn: database conn
     """
+    print(""" \033[32m
+===================================================
+                Creating Tables
+===================================================
+          \033[0m """)
     sql_notes(0, cursor)
     for table_name, value in TABLES.iteritems():
-        print("Creating table : {}".format(table_name))
+        print("Table : {}".format(table_name))
         try:
             cursor.execute(value['sql'])
         except Exception as e:
