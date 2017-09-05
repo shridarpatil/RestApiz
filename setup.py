@@ -6,6 +6,16 @@
 from setuptools import find_packages
 from setuptools import setup
 
+import ast
+import re
+
+# get version from __version__ variable in RestApiz/__init__.py
+_version_re = re.compile(r'__version__\s+=\s+(.*)')
+
+with open('RestApiz/__init__.py', 'rb') as f:
+    version = str(ast.literal_eval(_version_re.search(
+        f.read().decode('utf-8')).group(1)))
+
 with open('README.rst') as readme_file:
     readme = readme_file.read()
 
@@ -33,15 +43,18 @@ test_requirements = [
     # TODO: put package test requirements here
 ]
 
+github_url = 'https://github.com/shridarpatil/RestApiz'
+download_url = github_url + '/archive/' + version + '.tar.gz'
+
 setup(
     name='RestApiz',
-    version='0.1.0',
+    version=version,
     description="Create rest api's dynamically within no time.",
     long_description=readme + '\n\n' + history,
     author="Shridhar Patil",
     author_email='shridharpatil2792@gmail.com',
-    url='https://github.com/shridarpatil/RestApiz',
-    download_url='https://github.com/shridarpatil/Flask-RestApi/archive/0.1.0.tar.gz',
+    url=github_url,
+    download_url=download_url,
     packages=find_packages(include=("RestApiz",)),
     include_package_data=True,
     install_requires=requirements,

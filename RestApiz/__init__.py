@@ -5,4 +5,4 @@ from .RestApiz import create_api  # noqa
 
 __author__ = """Shridhar Patil"""
 __email__ = 'shridharpatil2792@gmail.com'
-__version__ = '0.1.4'
+__version__ = '0.1.3'
