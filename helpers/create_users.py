@@ -14,8 +14,13 @@ def create_admin_user(cursor, conn):
     :param cursor: databse cursor
     :param conn: database conn
     """
+    print(""" \033[32m
+===================================================
+                Creating User
+===================================================
+          \033[0m""")
     for user_name, value in USERS.iteritems():
-        print("Creating User: {}".format(user_name))
+        print("User: {}".format(user_name))
         try:
             cursor.execute(value['sql'])
         except pymysql.err.IntegrityError:

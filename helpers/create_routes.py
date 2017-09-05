@@ -14,8 +14,13 @@ def create_routes(cursor, conn):
     :param cursor: databse cursor
     :param conn: database conn
     """
+    print("""\033[32m
+===================================================
+                Creating Routes
+===================================================
+          \033[0m """)
     for user_name, value in ROUTES.iteritems():
-        print("Creating Route: {}".format(user_name))
+        print("Route: {}".format(user_name))
         try:
             cursor.execute(value['sql'])
         except pymysql.err.IntegrityError:
