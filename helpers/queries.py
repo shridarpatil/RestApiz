@@ -19,6 +19,7 @@ TABLES = {
                   `id` INT(10) NOT NULL AUTO_INCREMENT ,
                   `user_name` VARCHAR(100) NOT NULL ,
                   `password` VARCHAR(100) NOT NULL ,
+                  `token` VARCHAR(100) NOT NULL ,
                   PRIMARY KEY (`id`),
                   UNIQUE `user_ibfk_1` (`user_name`)
               ) ENGINE = InnoDB;
@@ -26,14 +27,14 @@ TABLES = {
     },
     "role": {
         "sql": """CREATE TABLE IF NOT EXISTS `roles` (
-                  `id` INT(10) NOT NULL ,
+                  `id` INT(10) NOT NULL AUTO_INCREMENT ,
                   `name` VARCHAR(50) NOT NULL ,
                   PRIMARY KEY (`id`),
                    UNIQUE `role_ibfk_1` (`name`)) ENGINE = InnoDB;"""
     },
     "user_roles": {
         "sql": """CREATE TABLE IF NOT EXISTS `user_roles` (
-                  `id` INT NOT NULL ,
+                  `id` INT NOT NULL AUTO_INCREMENT ,
                   `user_id` INT NOT NULL ,
                   `role_id` INT NOT NULL ,
                   PRIMARY KEY (`id`),
@@ -43,7 +44,7 @@ TABLES = {
     },
     "route_access_roles": {
         "sql": """CREATE TABLE IF NOT EXISTS `route_access_roles` (
-                 `id` INT(10) NOT NULL ,
+                 `id` INT(10) NOT NULL AUTO_INCREMENT ,
                  `route_id` INT(10) NOT NULL ,
                  `role_id` INT(10) NOT NULL ,
                  PRIMARY KEY (`id`),
@@ -56,8 +57,8 @@ TABLES = {
 
 USERS = {
     "Administrator": {
-        "sql": """INSERT INTO `user` (`id`, `user_name`, `password`)
-                VALUES ('', 'Administrator','r00t')
+        "sql": """INSERT INTO `user` (`user_name`, `password`)
+                VALUES ('Administrator','r00t')
             """
     }
 }

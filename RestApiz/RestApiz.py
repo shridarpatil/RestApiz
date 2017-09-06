@@ -13,6 +13,9 @@ import pymysql
 
 from utils.echo import echo
 from utils.exceptions import InvalidUsage
+from utils.generate_token import generate_token
+from utils.update_token import update_token
+from utils.validate_token import validate_token
 from utils.import_from import import_func
 from utils.log_client import LogClient
 from utils.response import generate_response_body
@@ -323,19 +326,6 @@ def create_api(app, host=None, user_name=None, password=None, database=None):
         format='Rest-Api %(asctime)s [%(levelname)-5.5s] %(message)s'
     )
 
-    @app.errorhandler(InvalidUsage)
-    def handle_invalid_usage(error):
-        response = jsonify(error.to_dict())
-        response.status_code = error.status_code
-        return response
-
-    @app.before_request
-    def before_request():
-
-        LogClient(request)
-        log.debug(request.headers.get('token'))
-        log.debug(request.endpoint)
-
     apis = CreateService()
     cursor, connection = apis.db_connect(host, user_name, password, database)
 
@@ -347,6 +337,32 @@ def create_api(app, host=None, user_name=None, password=None, database=None):
     apis.generate_rest_api(app, cursor, connection)
 
     echo()
+
+    @app.errorhandler(InvalidUsage)
+    def handle_invalid_usage(error):
+        response = jsonify(error.to_dict())
+        response.status_code = error.status_code
+        return response
+
+    @app.before_request
+    def before_request():
+
+        LogClient(request)
+        token = request.headers.get('token')
+        endpoint = request.endpoint
+        validate_token(cursor, connection, token, endpoint)
+
+    @app.after_request
+    def after_request(response):
+        status = response.status
+        if status[0] == '2':
+            new_token = generate_token()
+            token = request.headers.get('token')
+
+            update_token(cursor, connection, token, new_token)
+            response.headers["token"] = new_token
+
+        return response
 
 
 class RequestHandler(BaseRequestHandler):
