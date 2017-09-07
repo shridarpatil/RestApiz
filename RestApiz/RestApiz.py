@@ -18,12 +18,14 @@ from utils.update_token import update_token
 from utils.validate_token import validate_token
 from utils.import_from import import_func
 from utils.log_client import LogClient
+from utils.validate_roles import validate_roles
 from utils.response import generate_response_body
+
 from helpers.create_tables import create_tables
 from helpers.create_routes import create_routes
 from helpers.create_constraints import create_foreign_key_constraints
-
 from helpers.create_users import create_admin_user
+
 from werkzeug.serving import BaseRequestHandler
 
 
@@ -351,6 +353,7 @@ def create_api(app, host=None, user_name=None, password=None, database=None):
         token = request.headers.get('token')
         endpoint = request.endpoint
         validate_token(cursor, connection, token, endpoint)
+        validate_roles(cursor, connection, token, endpoint)
 
     @app.after_request
     def after_request(response):
