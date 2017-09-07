@@ -85,14 +85,23 @@ UPDATE_TABLE_STRUCTURE = {
               ADD CONSTRAINT `ibfk_user_roles_1` FOREIGN KEY (`user_id`)
               REFERENCES `user`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
             """,
+
+            """ALTER TABLE `user_roles`
+              ADD CONSTRAINT `ibfk_user_roles_2` FOREIGN KEY (`role_id`)
+              REFERENCES `roles`(`id`)
+              ON DELETE RESTRICT ON UPDATE RESTRICT;""",
+
             """ALTER TABLE `route_access_roles`
-              ADD CONSTRAINT `ibfk_user_roles_1` FOREIGN KEY (`route_id`)
+              ADD CONSTRAINT `ibfk_route_access_roles_roles_1` FOREIGN KEY (`route_id`)
               REFERENCES `py_restapi`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
             """,
+
             """ALTER TABLE `route_access_roles`
-              ADD CONSTRAINT `ibfk_user_roles_2` FOREIGN KEY (`role_id`)
+              ADD CONSTRAINT `ibfk_route_access_roles_roles_2` FOREIGN KEY (`role_id`)
               REFERENCES `roles`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
-            """
+            """,
+            """ALTER TABLE `user` CHANGE `token` `token` VARCHAR(100) CHARACTER
+            SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL;"""
         ]
     }
 }
