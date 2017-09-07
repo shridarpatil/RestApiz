@@ -26,6 +26,11 @@ def create_api(app):
     )
 
 
+@app.route("/admin")
+def admin():
+    return send_file("public/index.html")
+
+
 @app.errorhandler(404)
 def page_not_found(e):
     return jsonify({"error":'404.html'}), 404
