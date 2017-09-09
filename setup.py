@@ -55,12 +55,17 @@ setup(
     author_email='shridharpatil2792@gmail.com',
     url=github_url,
     download_url=download_url,
-    packages=find_packages(include=("RestApiz",)),
+    packages=find_packages(include=("RestApiz", "dashboard",)),
     include_package_data=True,
     install_requires=requirements,
     license="MIT license",
     zip_safe=False,
     keywords='RestApiz',
+    entry_points={
+        'console_scripts': [
+            'restapi=dashboard.cli:main'
+        ]
+    },
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',

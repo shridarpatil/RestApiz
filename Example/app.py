@@ -1,4 +1,4 @@
-#!/bin/python
+#!/usr/bin/env flask
 # -*- coding: utf-8 -*-
 
 import json
@@ -17,8 +17,7 @@ with open('dbConfig.json') as data_file:
 
 
 def create_api(app):
-    RestApiz.create_api(
-        app,
+    RestApiz.create_api(app,
         host=data["databaseHostName"],
         user_name=data['databaseUserName'],
         password=data['databasePassword'],
@@ -38,5 +37,6 @@ def page_not_found(e):
 
 if __name__ == "__main__":
     create_api(app)
+    app.run(debug=os.getenv("debug_mode", False), port=60001, host='127.0.1.1')
     app.run(debug=os.getenv("debug_mode", False), port=60000, host='127.0.1.1')
     # app.run(debug=False, request_handler=RestApiz.RequestHandler, port=3000)

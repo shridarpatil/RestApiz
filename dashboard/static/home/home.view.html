@@ -1,0 +1,24 @@
+﻿
+
+<div ng-include="'static/header.html'"></div>
+
+
+
+<h1>Hi, {{vm.user.firstName}}!</h1>
+<p>You're logged in!!</p>
+<h3>All registered :</h3>
+<ul class="navigation">
+  <li><a href="#">Products</a></li>
+  <li><a href="#">Contact</a></li>
+</ul>
+<ul>
+    <li ng-repeat="user in vm.allUsers">
+        {{user.username}} ({{user.firstName}} {{user.lastName}})
+        - <a ng-click="vm.deleteUser(user.id)">Delete</a>
+    </li>
+</ul>
+<p>&nbsp;</p>
+<p><a href="#!/login" class="btn btn-primary">Logout</a></p>
+
+
+
