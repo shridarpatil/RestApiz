@@ -7,12 +7,14 @@
     <link href="static/app-content/app.css" rel="stylesheet" />
 </head>
 <body>
+     <div class="jumbotron">
         <div class="container">
             <div class="col-sm-8 col-sm-offset-2">
                 <div ng-class="{ 'alert': flash, 'alert-success': flash.type === 'success', 'alert-danger': flash.type === 'error' }" ng-if="flash" ng-bind="flash.message"></div>
                 <div ng-view></div>
             </div>
         </div>
+    </div>
     <div class="credits text-center">
         <p>
             <a href="http://jasonwatmore.com/post/2015/03/10/angularjs-user-registration-and-login-example-tutorial">AngularJS User Registration and Login Example</a>
@@ -23,9 +25,9 @@
     </div>
 
     <script src="//code.jquery.com/jquery-3.1.1.min.js"></script>
-    <script src="//code.angularjs.org/1.6.0/angular.min.js"></script>
-    <script src="//code.angularjs.org/1.6.0/angular-route.min.js"></script>
-    <script src="//code.angularjs.org/1.6.0/angular-cookies.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.0/angular.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.0/angular-route.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.0/angular-cookies.min.js"></script>
 
     <script src="static/app.js"></script>
     <script src="static/app-services/authentication.service.js"></script>

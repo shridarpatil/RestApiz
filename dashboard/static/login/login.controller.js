@@ -7,6 +7,7 @@
 
     LoginController.$inject = ['$location', 'AuthenticationService', 'FlashService'];
     function LoginController($location, AuthenticationService, FlashService) {
+        alert("Hdllo")
         var vm = this;
 
         vm.login = login;
@@ -17,6 +18,8 @@
         })();
 
         function login() {
+                    alert("Hdllo")
+
             vm.dataLoading = true;
             AuthenticationService.Login(vm.username, vm.password, function (response) {
                 if (response.success) {
